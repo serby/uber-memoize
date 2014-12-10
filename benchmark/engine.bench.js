@@ -1,6 +1,7 @@
 var async = require('async')
-  , count = 200000
-
+  , count = 50
+  , UberMemoize = require('..')
+  , UberCache = require('uber-cache')
 
 function time(fn) {
   return function(done) {
@@ -11,113 +12,32 @@ function time(fn) {
   }
 }
 
-module.exports = function(name, engineFactory) {
+var uberCache = new UberCache()
+  , uberMemoize = new UberMemoize(uberCache)
+  , fib = uberMemoize.memoize(1, function(x, cb) {
+      if (x < 2) return cb(null, 1)
+      var c
+        , d
+      fib(x - 1, function(error, a) {
+        c = a
+        if (c && d) return cb(null, c + d)
+      })
+      fib(x - 2, function(error, b) {
+        d = b
+        if (c && d) return cb(null, c + d)
+      })
+    })
 
-  function populateCache(done) {
-    var doneCount = 0
-      , cache = engineFactory()
+async.series(
+  { '#memoize()': time(function(done) {
 
-
-    function setDone() {
-      doneCount += 1
-      if (doneCount === count) {
-        cache.close()
-        done(cache)
-      }
-    }
-
-    for (var i = 0; i < count; i++) {
-      cache.set('key' + i, i, setDone)
-    }
+      fib(count, function(error, result) {
+        console.log(result)
+        done()
+      })
+    })
   }
-
-  async.series(
-    { '#set()': time(function(done) {
-
-        populateCache(done)
-
-      })
-    , '#get() with empty cache': time(function(done) {
-
-        var doneCount = 0
-          , cache = engineFactory()
-
-
-        function getDone() {
-          doneCount += 1
-          if (doneCount === count) {
-            cache.close()
-            done()
-          }
-        }
-
-        for (var i = 0; i < count; i++) {
-          cache.get('key' + i, getDone)
-        }
-
-      })
-    , '#get() with populated cache': time(function(done) {
-
-        populateCache(function(cache) {
-          var doneCount = 0
-
-
-          function getDone() {
-            doneCount += 1
-            if (doneCount === count) {
-              cache.close()
-              done()
-            }
-          }
-
-          for (var i = 0; i < count; i++) {
-            cache.get('key' + i, getDone)
-          }
-        })
-
-      })
-    , '#del()': time(function(done) {
-
-        var doneCount = 0
-          , cache = engineFactory()
-
-
-        function delDone() {
-          doneCount += 1
-
-          // if (doneCount % 10000 === 0) {
-          //   console.log(doneCount)
-          // }
-          if (doneCount === count) {
-            cache.close()
-            done()
-          }
-        }
-
-        function del() {
-          console.log('Del')
-          for (var i = 0; i < count; i++) {
-            cache.del('key' + i, delDone)
-          }
-        }
-
-        function setDone() {
-          doneCount += 1
-          if (doneCount === count) {
-            doneCount = 0
-            del()
-          }
-        }
-
-        for (var i = 0; i < count; i++) {
-          cache.set('key' + i, i, setDone)
-        }
-
-      })
-    }
-    , function(error, times) {
-      console.log('Done', times)
-    }
-  )
-
-}
+  , function(error, times) {
+    console.log('Done', times)
+  }
+)
