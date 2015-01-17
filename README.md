@@ -25,13 +25,13 @@ var uberCache = new UberCache()
   , cachedSlowFn = uberMemoize.memoize(1, slowFn)
   , ttl = 10000 // 10 Seconds
 
-  // This first call will be slow
-  cachedSlowFn(1, ttl, function(err, result) {
-    // It will take 5 seconds to get here!
-    cachedSlowFn(1, function(err, result) {
-      // This will be quick!
-    })
+// This first call will be slow
+cachedSlowFn(1, ttl, function(err, result) {
+  // It will take 5 seconds to get here!
+  cachedSlowFn(1, function(err, result) {
+    // This will be quick!
   })
+})
 
 ```
 
