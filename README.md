@@ -38,5 +38,5 @@ var uberCache = new UberCache()
 ## Credits
 [Paul Serby](https://github.com/serby/) follow me on [twitter](http://twitter.com/serby)
 
-## Licencse
+## Licence
 Licenced under the [New BSD License](http://opensource.org/licenses/bsd-license.php)
