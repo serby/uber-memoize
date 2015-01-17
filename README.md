@@ -1,4 +1,4 @@
-# uber-memoize - Async memoize for uber-* engines
+# Async memoize for uber-cache-* engines
 
 [![build status](https://secure.travis-ci.org/serby/uber-memoize.png)](http://travis-ci.org/serby/uber-memoize)
 
