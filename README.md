@@ -19,7 +19,7 @@ function slowFn(i, cb) {
 
 var uberCache = new UberCache()
 
-  // You can use any uber-* engine to power memoize
+  // You can use any uber-cache-* engine to power memoize
   , uberMemoize = new UberMemoize(uberCache)
 
   , cachedSlowFn = uberMemoize.memoize(1, slowFn)
