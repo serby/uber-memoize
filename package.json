@@ -2,7 +2,7 @@
   "author": "Paul Serby <paul@serby.net>",
   "name": "uber-memoize",
   "description": "Async memoize module powered by uber-cache",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "publishConfig": {
     "registry": "http://registry.npmjs.org/"
   },
