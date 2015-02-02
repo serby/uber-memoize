@@ -22,7 +22,7 @@ var uberCache = new UberCache()
   // You can use any uber-cache-* engine to power memoize
   , uberMemoize = new UberMemoize(uberCache)
   , ttl = 10000 // 10 Seconds
-  , cachedSlowFn = uberMemoize.memoize(1, ttl, slowFn)
+  , cachedSlowFn = uberMemoize.memoize(1, slowFn ttl)
 
   // This first call will be slow
   cachedSlowFn(1, function(err, result) {
