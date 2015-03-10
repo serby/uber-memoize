@@ -163,4 +163,41 @@ describe('uber-memoize', function () {
 
   })
 
+  it('should give the memoized function a clear() method', function (done) {
+
+    var called = 0
+    function slowFn(cb) {
+      called++
+      cb(null)
+    }
+
+    var cacheEngine = new UberCache()
+      , uberMemoize = new UberMemoize(cacheEngine)
+      , fn = uberMemoize.memoize('test6', slowFn, 1000)
+
+    // First call, function should run
+    fn(function (err) {
+      if (err) return done(err)
+      called.should.equal(1)
+
+      // Second call, should short circuit
+      fn(function (err) {
+        if (err) return done(err)
+        called.should.equal(1)
+
+        fn.clear()
+
+        // Fist call after invalidate, function should run
+        fn(function (err) {
+          if (err) return done(err)
+          called.should.equal(2)
+          done()
+        })
+
+      })
+
+    })
+
+  })
+
 })

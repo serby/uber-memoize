@@ -16,50 +16,55 @@ function UberMemoize(engine, options) {
   this.engine = engine
 }
 
-UberMemoize.prototype.memoize = function(id, fn, ttl) {
+UberMemoize.prototype.memoize = function (id, fn, ttl) {
+
   var waitingCalls = {}
     , self = this
-    , cachedFn = function () {
+    , cacheCounter = 0
+
+  function cachedFn() {
+
     var args = Array.prototype.slice.call(arguments)
       , fnCallback = args.pop()
-      , key = id + '_' + self.options.hash(args)
+      , key = id + '_' + self.options.hash(args) + '_' + cacheCounter
 
-    self.engine.get(key, function (error, value) {
-      if (error) {
-        return fnCallback(error)
-      }
-      if (value === undefined) {
-        // Because calls to the slow functions can stack up, we keep track of
-        // all calls made while waiting for the slow function to return. We
-        // then return to all of them once the first and only call to the slow
-        // function returns.
-        if (waitingCalls[key]) {
-          return waitingCalls[key].push(fnCallback)
-        }
-        waitingCalls[key] = [ fnCallback ]
-        args.push(function() {
-          var args = Array.prototype.slice.call(arguments)
-          self.engine.set(key, args, ttl, function(error) {
-            if (error) {
-              // Tell all waiting calls about the error
-              waitingCalls[key].forEach(function (waitingCallback) {
-                waitingCallback(error)
-              })
-            } else {
-              // Send the results back to all waiting functions
-              waitingCalls[key].forEach(function (waitingCallback) {
-                waitingCallback.apply(undefined, args)
-              })
-            }
-            // Clear up the calls
-            delete waitingCalls[key]
+    self.engine.get(key, function (err, value) {
+
+      if (err) return fnCallback(err)
+
+      if (value !== undefined) return fnCallback.apply(undefined, value)
+
+      // Because calls to the slow functions can stack up, we keep track of
+      // all calls made while waiting for the slow function to return. We
+      // then return to all of them once the first and only call to the slow
+      // function returns.
+      if (waitingCalls[key]) return waitingCalls[key].push(fnCallback)
+
+      waitingCalls[key] = [ fnCallback ]
+
+      // Intercept the callback
+      args.push(function() {
+        var args = Array.prototype.slice.call(arguments)
+        // Store the arguments to the callback in the cache
+        self.engine.set(key, args, ttl, function (err) {
+          // Send the error/results back to all waiting functions
+          waitingCalls[key].forEach(function (waitingCallback) {
+            if (err) return waitingCallback(err)
+            waitingCallback.apply(undefined, args)
           })
+          // Clear up the calls
+          delete waitingCalls[key]
         })
-        fn.apply(null, args)
-      } else {
-        fnCallback.apply(undefined, value)
-      }
+      })
+
+      fn.apply(null, args)
+
     })
+
+  }
+
+  cachedFn.clear = function () {
+    cacheCounter++
   }
 
   return cachedFn
