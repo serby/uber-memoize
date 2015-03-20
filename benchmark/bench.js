@@ -1,6 +1,6 @@
 var async = require('async')
   , count = 40
-  , UberMemoize = require('..')
+  , uberMemoize = require('..')
   , UberCache = require('uber-cache')
   , results = []
 
@@ -28,8 +28,8 @@ function fib(x, cb) {
 }
 
 var uberCache = new UberCache()
-  , uberMemoize = new UberMemoize(uberCache)
-  , memoizedFib = uberMemoize.memoize(1, function(x, cb) {
+  , memoize = uberMemoize(1, uberCache)
+  , memoizedFib = memoize(function(x, cb) {
       if (x < 2) return cb(null, 1)
       var c
         , d
