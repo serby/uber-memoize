@@ -17,12 +17,14 @@ function slowFn(i, cb) {
   setTimeout(cb, 5000)
 }
 
-var uberCache = new UberCache()
+var UberCache = require('uber-cache')
+  , uberMemoize = require('uber-memoize')
+  , uberCache = new UberCache()
 
   // You can use any uber-cache-* engine to power memoize
-  , uberMemoize = new UberMemoize(uberCache)
+  , memoize = uberMemoize('some sort of prefix', uberCache)
   , ttl = 10000 // 10 Seconds
-  , cachedSlowFn = uberMemoize.memoize(1, slowFn ttl)
+  , cachedSlowFn = memoize(slowFn, ttl)
 
   // This first call will be slow
   cachedSlowFn(1, function(err, result) {
