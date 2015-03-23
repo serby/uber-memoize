@@ -35,6 +35,12 @@ var UberCache = require('uber-cache')
   })
 })
 
+// The memoized function comes with a clear() method which will invalidate
+// its cache, ensuring that the next call executes the original function
+cachedSlowFn.clear()
+cachedSlowFn(1, function (err, result) {
+  // This will take 5 seconds again
+})
 ```
 
 ## Credits
