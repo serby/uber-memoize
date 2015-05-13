@@ -2,6 +2,7 @@ module.exports = createMemoize
 
 var extend = require('lodash.assign')
   , sigmund = require('sigmund')
+  , async = require('async')
 
 // This hasher will descend 10 levels of object nesting in the arguments
 // of a memoized function. If you need a more advanced you can pass as an option.
@@ -13,20 +14,21 @@ function createMemoize(prefix, engine, opts) {
   var options = extend(
     { hash: hash
     }, opts)
+    , keys = {}
 
   return function memoize(fn, ttl) {
 
     var waitingCalls = {}
-      , cacheCounter = 0
 
     function cachedFn() {
 
       var args = Array.prototype.slice.call(arguments)
         , fnCallback = args.pop()
-        , key = prefix + '_' + options.hash(args) + '_' + cacheCounter
+        , key = prefix + '_' + options.hash(args)
+
+      keys[key] = true
 
       engine.get(key, function (err, value) {
-
         if (err) return fnCallback(err)
 
         if (value !== undefined) return fnCallback.apply(undefined, value)
@@ -60,8 +62,13 @@ function createMemoize(prefix, engine, opts) {
 
     }
 
-    cachedFn.clear = function () {
-      cacheCounter++
+    cachedFn.clear = function (cb) {
+      async.forEach(Object.keys(keys), engine.delete.bind(engine), function(err) {
+        if (err) return cb(err)
+        keys = {}
+        waitingCalls = {}
+        if (cb) return cb()
+      })
     }
 
     return cachedFn

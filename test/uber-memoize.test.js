@@ -163,7 +163,7 @@ describe('uber-memoize', function () {
 
   })
 
-  it('should give the memoized function a clear() method', function (done) {
+  it.only('should give the memoized function a clear() method', function (done) {
 
     var called = 0
     function slowFn(cb) {
@@ -184,14 +184,13 @@ describe('uber-memoize', function () {
       fn(function (err) {
         if (err) return done(err)
         called.should.equal(1)
-
-        fn.clear()
-
-        // Fist call after invalidate, function should run
-        fn(function (err) {
-          if (err) return done(err)
-          called.should.equal(2)
-          done()
+        fn.clear(function() {
+          // First call after invalidate, function should run
+          fn(function (err) {
+            if (err) return done(err)
+            called.should.equal(2)
+            done()
+          })
         })
 
       })
