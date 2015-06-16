@@ -163,7 +163,7 @@ describe('uber-memoize', function () {
 
   })
 
-  it.only('should give the memoized function a clear() method', function (done) {
+  it('should give the memoized function a clear() method', function (done) {
 
     var called = 0
     function slowFn(cb) {
