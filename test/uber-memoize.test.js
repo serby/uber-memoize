@@ -16,7 +16,7 @@ function giveMeTen(callback) {
 
 describe('uber-memoize', function () {
 
-  it('should create a function then when run gives the expected result', function (done) {
+  it('should create a function that when run gives the expected result', function (done) {
 
     var cacheEngine = new UberCache()
       , memoize = uberMemoize('test', cacheEngine)
