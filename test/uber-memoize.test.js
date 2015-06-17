@@ -87,10 +87,13 @@ describe('uber-memoize', function () {
 
   it('should not make a second call to slow function if already called', function (done) {
 
+    // Manually control the slow function
+    var tick
+
     function myFn(callback) {
       called.push(i)
       i += 1
-      setTimeout(callback.bind(null, i), 40)
+      tick = callback.bind(null, i)
     }
 
     var cacheEngine = new UberCache()
@@ -108,6 +111,156 @@ describe('uber-memoize', function () {
       called.should.eql([ 0 ])
       done()
     })
+
+    tick()
+  })
+
+  it('should stack up calls to slow functions', function (done) {
+
+    // Manually control the slow function
+    var tick
+
+    function myFn(callback) {
+      called.push(i)
+      i += 1
+      tick = callback
+    }
+
+    var cacheEngine = new UberCache()
+      , memoize = uberMemoize('test', cacheEngine)
+      , fn = memoize(myFn, 1000)
+      , called = []
+      , i = 0
+      , cbCount = 0
+
+    fn(function() {
+      cbCount += 1
+    })
+
+    fn(function() {
+      cbCount += 1
+    })
+
+    fn(function() {
+      should.equal(cbCount, 2)
+      done()
+    })
+
+    cacheEngine.clear(function() {
+      tick()
+    })
+
+  })
+
+  it('should recache if cache is cleared', function (done) {
+
+    // Manually control the slow function
+    var tick
+
+    function myFn(callback) {
+      called.push(i)
+      i += 1
+      tick = callback
+    }
+
+    var cacheEngine = new UberCache()
+      , memoize = uberMemoize('test', cacheEngine)
+      , fn = memoize(myFn, 1000)
+      , called = []
+      , i = 0
+      , cbCount = 0
+
+    fn(function() {
+      cbCount += 1
+    })
+
+    tick()
+    cacheEngine.clear(function() {
+      fn(function() {
+        should.deepEqual(called, [ 0, 1 ])
+        done()
+      })
+      tick()
+    })
+
+  })
+
+  it('should return error cache backend errors on get()', function (done) {
+
+    function myFn(callback) {
+      called.push(i)
+      i += 1
+      callback()
+    }
+
+    var mockCache =
+      { get: function(key, cb) {
+          cb(new Error('Get Error'), undefined)
+        }
+      }
+      , memoize = uberMemoize('test', mockCache)
+      , fn = memoize(myFn, 1000)
+      , called = []
+      , i = 0
+
+    fn(function(error) {
+      error.message.should.equal('Get Error')
+      done()
+    })
+
+  })
+
+  it('should return error cache backend errors on set()', function (done) {
+
+    function myFn(callback) {
+      called.push(i)
+      i += 1
+      callback(null, 'Hello')
+    }
+
+    var mockCache =
+      { get: function(key, cb) {
+          cb(null, undefined)
+        }
+      , set: function(key, value, ttl, cb) {
+          cb(new Error('Set Error'))
+        }
+      }
+      , memoize = uberMemoize('test', mockCache)
+      , fn = memoize(myFn, 1000)
+      , called = []
+      , i = 0
+
+    fn(function(error) {
+      error.message.should.equal('Set Error')
+      done()
+    })
+
+  })
+
+  it('should allow a lot of waiting calls', function (done) {
+
+    function myFn(callback) {
+      called.push(i)
+      i += 1
+      callback(null, 'Hello')
+    }
+
+    var cacheEngine = new UberCache()
+      , memoize = uberMemoize('test', cacheEngine)
+      , fn = memoize(myFn, 1000)
+      , called = []
+      , i = 0
+      , e  = 0
+
+    function complete() {
+      process.nextTick(function() {
+        e -= 1
+        if (e <= 0) done()
+      })
+    }
+
+    for (; e < 10000; e += 1) fn(complete)
 
   })
 
