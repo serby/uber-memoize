@@ -39,6 +39,7 @@ function createMemoize(prefix, engine, opts) {
         // function returns.
         if (waitingCalls[key]) return waitingCalls[key].push(fnCallback)
 
+        // Only the first uncached call will reach here
         waitingCalls[key] = [ fnCallback ]
 
         // Intercept the callback
