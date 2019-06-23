@@ -1,6 +1,6 @@
 # Async memoize for uber-cache-* engines
 
-[![build status](https://secure.travis-ci.org/serby/uber-memoize.png)](http://travis-ci.org/serby/uber-memoize)
+[![build status](https://secure.travis-ci.org/serby/uber-memoize.png)](http://travis-ci.org/serby/uber-memoize) [![Greenkeeper badge](https://badges.greenkeeper.io/serby/uber-memoize.svg)](https://greenkeeper.io/)
 
 If you want to know about memoization read this http://en.wikipedia.org/wiki/Memoization
 
