@@ -17,13 +17,16 @@
     "type": "git",
     "url": "git@github.com:serby/uber-memoize"
   },
+  "files": [
+    "./uber-memoize.js"
+  ],
   "main": "./uber-memoize.js",
   "scripts": {
-    "lint": "./node_modules/.bin/jshint . --reporter=./node_modules/jshint-full-path/index.js",
-    "pretest": "npm run-script lint",
+    "lint": "jshint . --reporter=./node_modules/jshint-full-path/index.js",
+    "pretest": "yarn lint",
     "bench": "node benchmark/bench",
-    "test": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- -R spec -r should",
-    "posttest": "./node_modules/.bin/istanbul check-coverage && rm -rf coverage"
+    "test": "nyc mocha -R spec -r should",
+    "posttest": "rm -rf .nyc_output"
   },
   "engines": {
     "node": ">=0.10"
@@ -38,6 +41,7 @@
     "jshint": "^2.5.10",
     "jshint-full-path": "^1.1.1",
     "mocha": "^2.0.1",
+    "nyc": "^14.1.1",
     "should": "^4.3.1",
     "uber-cache": "^2.0.0"
   }
